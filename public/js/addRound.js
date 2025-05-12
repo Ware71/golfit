@@ -16,6 +16,7 @@ export function initAddPastRound(firebase) {
   const courseMap = {};
 
   db.collection("courses").get().then(snapshot => {
+    console.log("📦 Loaded courses:", snapshot.size);
     snapshot.forEach(doc => {
       const course = doc.data();
       if (!courseMap[course.name]) {

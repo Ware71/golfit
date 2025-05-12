@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.querySelectorAll("[onclick='showAddPastRound()']").forEach(el => {
-    el.onclick = () => showOnly("add-past-round-screen");
+    el.onclick = () => initAddPastRound(app);
   });
 
   document.querySelectorAll("[onclick='showHome()']").forEach(el => {
