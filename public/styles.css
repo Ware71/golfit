@@ -178,3 +178,32 @@ button:hover {
   padding: 1.5rem;
   margin: 2rem auto;
 }
+
+#hole-scores-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 1rem;
+}
+
+#hole-scores-container div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 0.1rem;
+}
+
+#hole-scores-container label {
+  font-weight: bold;
+  margin-bottom: 0.1rem;
+}
+
+#hole-scores-container input {
+  width: 200px;
+  padding: 0.4rem;
+  margin-bottom: 0.2rem;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  text-align: center;
+}
