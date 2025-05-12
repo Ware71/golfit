@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>GolfIt</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0d47a1" />
+    <script defer src="https://www.gstatic.com/firebasejs/11.7.1/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/11.7.1/firebase-auth-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/11.7.1/firebase-firestore-compat.js"></script>
+    <script defer src="/__/firebase/init.js"></script>
+    <script type="module" src="js/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+
+  <body>
+    <div id="app-header" class="header">
+      <a class="app-logo-link" onclick="showHome()">
+        <img src="logo.png" alt="GolfIt Logo" class="app-logo" />
+      </a>
+      <div class="header-title">GolfIt</div>
+      <button id="logout-button" class="logout">Log Out</button>
+    </div>
+
+    <div id="login-container">
+      <div id="login-form" class="centered-container">
+        <input type="email" id="email" placeholder="Email" /><br />
+        <input type="password" id="password" placeholder="Password" /><br />
+        <button id="signup-btn">Sign Up</button>
+        <button id="login-btn">Log In</button>
+      </div>
+    </div>
+
+    <div id="home-screen" style="display: none;">
+      <p>Welcome, <span id="user-email"></span>!</p>
+      <button onclick="showAddRoundOptions()">➕ Add Round</button>
+      <button onclick="showProfile()">👤 Profile</button>
+      <button onclick="showCourses()">📚 View Courses</button>
+      <button onclick="showStats()">📊 View Stats</button>
+    </div>
+
+    <div id="add-round-options-screen" style="display:none;">
+      <h2>Add Round</h2>
+      <button onclick="showAddPastRound()">🕒 Add Past Round</button><br /><br />
+      <button onclick="alert('Live scoring coming soon')">📲 Play Now (Live Scoring)</button><br /><br />
+      <button onclick="showHome()">⬅ Back</button>
+    </div>
+
+    <div id="add-past-round-screen" style="display:none;">
+      <h2>Add Past Round</h2>
+      <form id="past-round-form">
+        <label>Round Type:</label><br />
+        <select id="round-type" required>
+          <option value="18 Holes">18 Holes</option>
+          <option value="9 Holes">9 Holes</option>
+        </select><br /><br />
+
+        <label>Date:</label><br />
+        <input type="date" id="round-date" required /><br /><br />
+
+        <label>Course:</label><br />
+        <select id="past-course-name" required></select><br /><br />
+
+        <label>Tee:</label><br />
+        <select id="past-tee-name" required></select><br /><br />
+
+        <div id="hole-scores-container"></div>
+
+        <button type="submit">➕ Submit Round</button>
+      </form>
+      <br />
+      <button onclick="showAddRoundOptions()">⬅ Back</button>
+    </div>
+
+    <div id="courses-screen" style="display: none;">
+      <h2>Available Courses</h2>
+      <label for="course-name-select">Choose a course:</label><br />
+      <select id="course-name-select">
+        <option disabled selected value="">-- Select a course --</option>
+      </select>
+      <br /><br />
+      <label for="tee-select">Choose a tee:</label><br />
+      <select id="tee-select" disabled>
+        <option disabled selected value="">-- Select a tee --</option>
+      </select>
+      <div id="selected-course-details" style="margin-top: 1.5rem;"></div>
+      <hr />
+      <button id="toggle-add-course-btn">➕ Add New Course</button>
+      <div id="add-course-container" class="centered-container" style="display: none;">
+        <h3>Add a New Course</h3>
+        <form id="add-course-form">
+          <input type="text" id="new-course-name" placeholder="Course Name" required /><br /><br />
+          <input type="text" id="new-course-tee" placeholder="Tee (e.g. White)" required /><br /><br />
+          <input type="number" step="0.1" id="new-course-par" placeholder="Par" required /><br /><br />
+          <input type="number" step="0.1" id="new-course-cr" placeholder="Course Rating (CR)" required /><br /><br />
+          <input type="number" step="1" id="new-course-sr" placeholder="Slope Rating (SR)" required /><br /><br />
+          <p><strong>Hole-by-hole (Par / SI):</strong></p>
+          <div id="hole-inputs"></div>
+          <br />
+          <button type="submit">➕ Add Course</button>
+        </form>
+      </div>
+      <br />
+      <button onclick="showHome()">⬅ Back</button>
+    </div>
+
+    <div id="profile-screen" style="display:none;">
+      <h2>Your Profile</h2>
+      <div>
+        <label>Name:</label><br />
+        <input type="text" id="profile-name" /><br /><br />
+        <label>Email:</label><br />
+        <input type="email" id="profile-email" disabled /><br /><br />
+        <label>Handicap:</label><br />
+        <input type="text" id="profile-handicap" disabled /><br /><br />
+        <button onclick="showClubs()">🔧 Manage Clubs</button>
+      </div>
+      <hr />
+      <button onclick="showRounds()">📖 View All Rounds</button><br /><br />
+      <button onclick="showHome()">⬅ Back</button>
+    </div>
+
+    <div id="clubs-screen" style="display:none;">
+      <h2>Your Clubs</h2>
+      <form id="club-form">
+        <select id="club-type">
+          <option value="Driver">Driver</option>
+          <option value="3W">3W</option>
+          <option value="5W">5W</option>
+          <option value="7W">7W</option>
+          <option value="1H">1H</option>
+          <option value="2H">2H</option>
+          <option value="3H">3H</option>
+          <option value="4H">4H</option>
+          <option value="5H">5H</option>
+          <option value="1i">1i</option>
+          <option value="2i">2i</option>
+          <option value="3i">3i</option>
+          <option value="4i">4i</option>
+          <option value="5i">5i</option>
+          <option value="6i">6i</option>
+          <option value="7i">7i</option>
+          <option value="8i">8i</option>
+          <option value="9i">9i</option>
+          <option value="PW">PW</option>
+          <option value="GW">GW</option>
+          <option value="SW">SW</option>
+          <option value="LW">LW</option>
+        </select>
+        <input type="text" id="club-brand" placeholder="Brand" required />
+        <input type="text" id="club-model" placeholder="Model" required />
+        <input type="number" id="club-carry" placeholder="Carry Distance (yds)" />
+        <button type="submit">Add Club</button>
+      </form>
+      <ul id="club-list"></ul>
+      <br />
+      <button onclick="showProfile()">⬅ Back</button>
+    </div>
+
+    <div id="rounds-screen" style="display:none;">
+      <h2>Round History</h2>
+      <ul id="round-list"></ul>
+      <br />
+      <button onclick="exportRounds()">⬇ Export to CSV</button><br /><br />
+      <button onclick="showProfile()">⬅ Back</button>
+    </div>
+
+    <div id="stats-screen" style="display:none;">
+      <h2>Handicap Trend</h2>
+      <canvas id="handicap-chart" width="100%" height="200"></canvas>
+      <br />
+      <button onclick="showHome()">⬅ Back</button>
+    </div>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js').then(() => {
+            console.log('Service Worker registered!');
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

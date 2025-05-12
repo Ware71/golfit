@@ -1,0 +1,180 @@
+/* Reset and layout */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f2f2f2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding-top: env(safe-area-inset-top); /* Handles iOS notch */
+}
+
+/* Header layout */
+.header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 600px;
+  padding: 0.5rem 1rem;
+  background-color: #f2f2f2;
+  z-index: 10;
+  min-height: 56px;
+}
+
+.header-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #0d47a1;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.app-logo {
+  height: 32px;
+  width: 32px;
+  display: block;
+}
+
+.app-logo-link {
+  position: absolute;
+  left: 1rem;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.logout {
+  all: unset;
+  position: absolute;
+  right: 1rem;
+  color: #0d47a1;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.logout:hover {
+  color: #ef5350;
+  text-decoration: underline;
+}
+
+/* Login form */
+#login-form {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-height: calc(100vh - 120px);
+  padding-top: 1rem;
+  width: 100%;
+}
+
+input,
+button {
+  width: 90vw;
+  max-width: 300px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+button {
+  background-color: #0d47a1;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+button:hover {
+  background-color: #09408e;
+}
+
+#home-screen {
+  margin-top: 2rem;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+@media (min-width: 600px) {
+  input,
+  button {
+    font-size: 1.1rem;
+  }
+}
+
+/* CLUB MANAGEMENT */
+#club-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+#club-list {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+  max-width: 400px;
+}
+
+#club-list li {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+#club-list span {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.carry-input {
+  width: 100%;
+  font-size: 1rem;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.delete-icon {
+  all: unset;
+  color: #ef5350;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+  align-self: flex-end;
+  cursor: pointer;
+}
+
+.delete-icon:hover {
+  text-decoration: underline;
+}
+
+.centered-container {
+  width: 100%;
+  max-width: 400px;
+  padding: 1.5rem;
+  margin: 2rem auto;
+}

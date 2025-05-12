@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Import Courses</title>
+  <script defer src="https://www.gstatic.com/firebasejs/11.7.1/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/11.7.1/firebase-firestore-compat.js"></script>
+  <script defer src="/__/firebase/init.js"></script>
+</head>
+<body>
+  <h1>Import Courses</h1>
+  <button onclick="importCourses()">Import Now</button>
+
+  <script>
+    async function importCourses() {
+      const response = await fetch('courses.json');
+      const courses = await response.json();
+      const db = firebase.firestore();
+
+      for (const course of courses) {
+        await db.collection('courses').add(course);
+        console.log('Imported:', course.name);
+      }
+
+      alert('Courses imported successfully!');
+    }
+  </script>
+</body>
+</html>
