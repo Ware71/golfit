@@ -242,3 +242,97 @@ button:hover {
   border-radius: 5px;
   text-align: center;
 }
+/* Popup container */
+.score-popup {
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, 42px); /* 3 columns */
+  gap: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  position: absolute;
+  z-index: 1000;
+}
+
+/* Each button inside the popup */
+.score-popup button {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  font-size: 1rem;
+  text-align: center;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0;
+  background: transparent;
+  color: black;
+  border: none;
+}
+
+/* Albatross (filled black circle with white text) */
+.score-score.albatross {
+  background: black;
+  color: white;
+  border-radius: 50%;
+}
+
+/* Eagle (double-outlined circle) */
+.score-score.eagle {
+  border: 2px solid black;
+  border-radius: 50%;
+}
+.score-score.eagle::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 2px solid black;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Birdie (single-outlined circle) */
+.score-score.birdie {
+  border: 2px solid black;
+  border-radius: 50%;
+}
+
+/* Par (plain number, no shape) */
+.score-score.par {
+  background: transparent;
+  color: black;
+}
+
+/* Bogey (single-outlined square) */
+.score-score.bogey {
+  border: 2px solid black;
+  border-radius: 0;
+}
+
+/* Double bogey (double-outlined square) */
+.score-score.double {
+  border: 2px solid black;
+  border-radius: 0;
+}
+.score-score.double::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 2px solid black;
+  border-radius: 0;
+  pointer-events: none;
+}
+
+/* Triple or worse (filled black square with white text) */
+.score-score.triple {
+  background: black;
+  color: white;
+  border-radius: 0;
+}

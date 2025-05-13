@@ -17,7 +17,6 @@ export function initAddPastRound(firebase) {
   let currentNumHoles = 18;
 
   db.collection("courses").get().then(snapshot => {
-    console.log("📦 Loaded courses:", snapshot.size);
     snapshot.forEach(doc => {
       const course = doc.data();
       if (!courseMap[course.name]) {
@@ -46,12 +45,9 @@ export function initAddPastRound(firebase) {
 
     teeSelect.onchange = () => {
       const selectedTee = tees.find(t => t.id === teeSelect.value);
-
-      // Set the round type based on number of holes
       const holeCount = selectedTee.holes.length;
       roundTypeSelect.innerHTML = `<option>${holeCount === 9 ? '9 Holes' : '18 Holes'}</option>`;
       roundTypeSelect.disabled = true;
-
       renderHoleInputs(selectedTee.holes);
     };
   };
@@ -61,18 +57,83 @@ export function initAddPastRound(firebase) {
     currentNumHoles = holes.length;
 
     for (let i = 0; i < currentNumHoles; i++) {
+      const hole = holes[i];
       const div = document.createElement("div");
       div.className = "hole-row";
-      
+
       div.innerHTML = `
-        <label>Hole ${i + 1}:</label>
-        <input type="number" placeholder="Score" id="hole-score-${i}" required />
-        <input type="number" placeholder="Putts" id="hole-putts-${i}" required />
-        <br/><br/>
+        <div class="hole-info">
+          <span>Hole ${i + 1}</span>
+          <span>Par ${hole.par}</span>
+          <span>SI ${hole.si}</span>
+        </div>
+        <div class="hole-inputs">
+          <input type="text" readonly placeholder="Score" id="hole-score-${i}" class="score-input" />
+          <input type="number" placeholder="Putts" id="hole-putts-${i}" required />
+        </div>
       `;
+
       holeContainer.appendChild(div);
+
+      const scoreInput = div.querySelector(`#hole-score-${i}`);
+      scoreInput.addEventListener("click", () => openScorePopup(scoreInput, hole.par));
     }
   }
+
+  function openScorePopup(input, par) {
+    let popup = document.getElementById("score-selector");
+    if (!popup) {
+      popup = document.createElement("div");
+      popup.id = "score-selector";
+      popup.className = "score-popup";
+      document.body.appendChild(popup);
+    }
+
+    popup.innerHTML = "";
+    popup.style.display = "grid";
+    const scores = [1, 2, 3, 4, 5, 6, 7, 8,"+"];
+
+    scores.forEach(score => {
+      const delta = score - par;
+      const btn = document.createElement("button");
+      btn.textContent = score;
+      btn.dataset.score = score;
+
+      if (delta <= -3) {
+        btn.className = "score-score albatross"; // blacked square, white text
+      } else if (delta === -2) {
+        btn.className = "score-score eagle"; // double outline
+      } else if (delta === -1) {
+        btn.className = "score-score birdie";
+      } else if (delta === 0) {
+        btn.className = "score-score par";
+      } else if (delta === 1) {
+        btn.className = "score-score bogey";
+      } else if (delta === 2) {
+        btn.className = "score-score double";
+      } else {
+        btn.className = "score-score triple"; // blacked square, white text
+      }
+
+      btn.onclick = () => {
+        input.value = score;
+        popup.style.display = "none";
+      };
+
+      popup.appendChild(btn);
+    });
+
+    const rect = input.getBoundingClientRect();
+    popup.style.top = `${rect.bottom + window.scrollY + 8}px`;
+    popup.style.left = `${rect.left + window.scrollX}px`;
+  }
+
+  document.body.addEventListener("click", (e) => {
+    const popup = document.getElementById("score-selector");
+    if (popup && !popup.contains(e.target) && !e.target.classList.contains("score-input")) {
+      popup.style.display = "none";
+    }
+  });
 
   document.getElementById("past-round-form").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -82,7 +143,7 @@ export function initAddPastRound(firebase) {
     const courseName = courseSelect.value;
     const teeId = teeSelect.value;
     const dateStr = document.getElementById("round-date").value;
-    const type = roundTypeSelect.value; // now set by app, not user
+    const type = roundTypeSelect.value;
 
     const teeSnapshot = await db.collection("courses").doc(teeId).get();
     const teeData = teeSnapshot.data();
