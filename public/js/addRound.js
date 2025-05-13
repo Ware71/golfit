@@ -80,53 +80,83 @@ export function initAddPastRound(firebase) {
     }
   }
 
-  function openScorePopup(input, par) {
-    let popup = document.getElementById("score-selector");
-    if (!popup) {
-      popup = document.createElement("div");
-      popup.id = "score-selector";
-      popup.className = "score-popup";
-      document.body.appendChild(popup);
-    }
+function openScorePopup(input, par) {
+  let popup = document.getElementById("score-selector");
+  if (!popup) {
+    popup = document.createElement("div");
+    popup.id = "score-selector";
+    popup.className = "score-popup";
+    document.body.appendChild(popup);
+  }
 
-    popup.innerHTML = "";
-    popup.style.display = "grid";
-    const scores = [1, 2, 3, 4, 5, 6, 7, 8,"+"];
+  popup.innerHTML = "";
+  popup.style.display = "grid";
 
-    scores.forEach(score => {
+  const scores = [1, 2, 3, 4, 5, 6, 7, 8, "+"];
+
+  scores.forEach(score => {
+    const btn = document.createElement("button");
+    btn.textContent = score;
+
+    if (score === "+") {
+      btn.className = "score-popup plus";
+      btn.onclick = () => {
+        popup.style.display = "none";
+
+        // Create a new editable input and insert it in place of the original
+        const editable = input.cloneNode(true);
+        editable.removeAttribute("readonly");
+        editable.setAttribute("type", "text");
+        editable.setAttribute("inputmode", "numeric");
+        editable.setAttribute("pattern", "[0-9]*");
+        editable.value = "";
+        editable.classList.add("manual-score");
+
+        input.replaceWith(editable);
+        editable.focus();
+
+        // After blur, lock it again and restore the original input structure
+        editable.addEventListener("blur", () => {
+          const value = editable.value.trim();
+          input.value = value;
+          input.setAttribute("readonly", true);
+          editable.replaceWith(input);
+        }, { once: true });
+      };
+    } else {
       const delta = score - par;
-      const btn = document.createElement("button");
-      btn.textContent = score;
       btn.dataset.score = score;
 
       if (delta <= -3) {
-        btn.className = "score-score albatross"; // blacked square, white text
+        btn.className = "score-score albatross"; // black filled circle
       } else if (delta === -2) {
-        btn.className = "score-score eagle"; // double outline
+        btn.className = "score-score eagle"; // double outline circle
       } else if (delta === -1) {
-        btn.className = "score-score birdie";
+        btn.className = "score-score birdie"; // single outline circle
       } else if (delta === 0) {
-        btn.className = "score-score par";
+        btn.className = "score-score par"; // plain number
       } else if (delta === 1) {
-        btn.className = "score-score bogey";
+        btn.className = "score-score bogey"; // single outline square
       } else if (delta === 2) {
-        btn.className = "score-score double";
+        btn.className = "score-score double"; // double outline square
       } else {
-        btn.className = "score-score triple"; // blacked square, white text
+        btn.className = "score-score triple"; // black filled square
       }
 
       btn.onclick = () => {
         input.value = score;
         popup.style.display = "none";
       };
+    }
 
-      popup.appendChild(btn);
-    });
+    popup.appendChild(btn);
+  });
 
-    const rect = input.getBoundingClientRect();
-    popup.style.top = `${rect.bottom + window.scrollY + 8}px`;
-    popup.style.left = `${rect.left + window.scrollX}px`;
-  }
+  const rect = input.getBoundingClientRect();
+  popup.style.top = `${rect.bottom + window.scrollY + 8}px`;
+  popup.style.left = `${rect.left + window.scrollX}px`;
+}
+
 
   document.body.addEventListener("click", (e) => {
     const popup = document.getElementById("score-selector");
