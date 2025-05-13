@@ -52,33 +52,68 @@ export function initAddPastRound(firebase) {
     };
   };
 
+   // Update totals on any change
+    function updateTotals() {
+      let totalScore = 0;
+      let totalPutts = 0;
+      for (let j = 0; j < currentNumHoles; j++) {
+        const s = parseInt(document.getElementById(`hole-score-${j}`)?.value);
+        const p = parseInt(document.getElementById(`hole-putts-${j}`)?.value);
+        if (!isNaN(s)) totalScore += s;
+        if (!isNaN(p)) totalPutts += p;
+      }
+      document.getElementById("total-score").textContent = totalScore;
+      document.getElementById("total-putts").textContent = totalPutts;
+    };
+
   function renderHoleInputs(holes) {
-    holeContainer.innerHTML = "";
-    currentNumHoles = holes.length;
+  holeContainer.innerHTML = "";
+  currentNumHoles = holes.length;
 
-    for (let i = 0; i < currentNumHoles; i++) {
-      const hole = holes[i];
-      const div = document.createElement("div");
-      div.className = "hole-row";
+  for (let i = 0; i < currentNumHoles; i++) {
+    const hole = holes[i];
+    const div = document.createElement("div");
+    div.className = "hole-row";
 
-      div.innerHTML = `
-        <div class="hole-info">
-          <span>Hole ${i + 1}</span>
-          <span>Par ${hole.par}</span>
-          <span>SI ${hole.si}</span>
-        </div>
-        <div class="hole-inputs">
-          <input type="text" readonly placeholder="Score" id="hole-score-${i}" class="score-input" />
-          <input type="number" placeholder="Putts" id="hole-putts-${i}" required />
-        </div>
-      `;
+    div.innerHTML = `
+      <div class="hole-info">
+        <span>Hole ${i + 1}</span>
+        <span>Par ${hole.par}</span>
+        <span>SI ${hole.si}</span>
+      </div>
+      <div class="hole-inputs">
+        <input type="text" readonly placeholder="Score" id="hole-score-${i}" class="score-input" />
+        <input type="number" readonly placeholder="Putts" id="hole-putts-${i}" class="putts-input" />
+      </div>
+    `;
 
-      holeContainer.appendChild(div);
+    holeContainer.appendChild(div);
 
-      const scoreInput = div.querySelector(`#hole-score-${i}`);
-      scoreInput.addEventListener("click", () => openScorePopup(scoreInput, hole.par));
-    }
+    const scoreInput = div.querySelector(`#hole-score-${i}`);
+    const puttsInput = div.querySelector(`#hole-putts-${i}`);
+
+    scoreInput.addEventListener("click", () => openScorePopup(scoreInput, hole.par));
+    puttsInput.addEventListener("click", () => openPuttsPopup(puttsInput));
+  
+    scoreInput.addEventListener("input", updateTotals);
+    scoreInput.addEventListener("change", updateTotals);
+
+    puttsInput.addEventListener("input", updateTotals);
+    puttsInput.addEventListener("change", updateTotals);
   }
+
+  // Add totals box at bottom
+  const totalsDiv = document.createElement("div");
+  totalsDiv.id = "round-totals";
+  totalsDiv.innerHTML = `
+    <strong>Total Score:</strong> <span id="total-score">0</span>
+    &nbsp;&nbsp;|&nbsp;&nbsp;
+    <strong>Total Putts:</strong> <span id="total-putts">0</span>
+  `;
+  holeContainer.appendChild(totalsDiv);
+  updateTotals();
+}
+
 
 function openScorePopup(input, par) {
   let popup = document.getElementById("score-selector");
@@ -102,6 +137,7 @@ function openScorePopup(input, par) {
       btn.className = "score-popup plus";
       btn.onclick = () => {
         popup.style.display = "none";
+        updateTotals();
 
         // Create a new editable input and insert it in place of the original
         const editable = input.cloneNode(true);
@@ -121,6 +157,7 @@ function openScorePopup(input, par) {
           input.value = value;
           input.setAttribute("readonly", true);
           editable.replaceWith(input);
+          updateTotals();
         }, { once: true });
       };
     } else {
@@ -157,12 +194,77 @@ function openScorePopup(input, par) {
   popup.style.left = `${rect.left + window.scrollX}px`;
 }
 
+function openPuttsPopup(input) {
+  let popup = document.getElementById("putts-selector");
+  if (!popup) {
+    popup = document.createElement("div");
+    popup.id = "putts-selector";
+    popup.className = "score-popup putts-popup";
+    document.body.appendChild(popup);
+  }
+
+  popup.innerHTML = "";
+  popup.style.display = "grid";
+
+  const options = [1, 2, 3, "4+"];
+
+  options.forEach(option => {
+    const btn = document.createElement("button");
+    btn.textContent = option;
+
+    if (option === "4+") {
+      btn.className = "score-popup plus";
+      btn.onclick = () => {
+        popup.style.display = "none";
+        updateTotals();
+
+        // Clone input and replace it to force iOS keyboard to open
+        const editable = input.cloneNode(true);
+        editable.removeAttribute("readonly");
+        editable.setAttribute("type", "text");
+        editable.setAttribute("inputmode", "numeric");
+        editable.setAttribute("pattern", "[0-9]*");
+        editable.value = "";
+        editable.classList.add("manual-score");
+
+        input.replaceWith(editable);
+        editable.focus();
+
+        editable.addEventListener("blur", () => {
+          const value = editable.value.trim();
+          input.value = value;
+          input.setAttribute("readonly", true);
+          editable.replaceWith(input);
+          updateTotals();
+        }, { once: true });
+      };
+    } else {
+      btn.className = "score-score par"; // Neutral style for putts
+      btn.onclick = () => {
+        input.value = option;
+        popup.style.display = "none";
+      };
+    }
+
+    popup.appendChild(btn);
+  });
+
+  const rect = input.getBoundingClientRect();
+  popup.style.top = `${rect.bottom + window.scrollY + 8}px`;
+  popup.style.left = `${rect.left + window.scrollX}px`;
+}
+
+
 
   document.body.addEventListener("click", (e) => {
     const popup = document.getElementById("score-selector");
     if (popup && !popup.contains(e.target) && !e.target.classList.contains("score-input")) {
       popup.style.display = "none";
     }
+    const puttsPopup = document.getElementById("putts-selector");
+    if (puttsPopup && !puttsPopup.contains(e.target) && !e.target.classList.contains("putts-input")) {
+      puttsPopup.style.display = "none";
+}
   });
 
   document.getElementById("past-round-form").addEventListener("submit", async (e) => {

@@ -337,6 +337,10 @@ button:hover {
   border-radius: 0;
 }
 
+.putts-popup {
+  grid-template-columns: repeat(2, 48px);
+}
+
 .score-popup.plus {
   background: black;
   color: white;
@@ -345,4 +349,72 @@ button:hover {
   align-items: center;
   justify-content: center;
   font-size: 1.1rem;
+}
+
+#add-past-round-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+}
+
+#add-past-round-screen form,
+#add-past-round-screen > div:not(#hole-scores-container) {
+  width: 100%;
+  max-width: 420px;
+}
+
+.hole-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  background-color: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.hole-info {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+  font-weight: 500;
+}
+
+.hole-inputs {
+  display: flex;
+  gap: 0.5rem;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.hole-inputs input:first-child {
+  flex: 2; /* Score box */
+}
+
+.hole-inputs input:last-child {
+  flex: 1; /* Putts box */
+}
+
+@media (max-width: 500px) {
+  .hole-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hole-inputs {
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+  }
+}
+
+#round-totals {
+  margin-top: 1rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  text-align: center;
 }
