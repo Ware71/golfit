@@ -189,9 +189,16 @@ button:hover {
 
 #hole-scores-container div {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  margin-bottom: 0.1rem;
+  justify-content: space-between;
+  gap: 0.5rem;
+  background-color: #fff;
+  padding: 0.5rem 1rem;
+  margin: 0.25rem 0;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  width: 100%;
+  max-width: 400px;
 }
 
 #hole-scores-container label {
@@ -200,10 +207,38 @@ button:hover {
 }
 
 #hole-scores-container input {
-  width: 200px;
+  width: 80px;
   padding: 0.4rem;
   margin-bottom: 0.2rem;
   border: 1px solid #ccc;
   border-radius: 3px;
+  text-align: center;
+}
+
+.hole-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  background-color: #fff;
+  padding: 0.5rem 1rem;
+  margin: 0.25rem 0;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  width: 100%;
+  max-width: 400px;
+}
+
+.hole-row label {
+  font-weight: 600;
+  min-width: 60px;
+  text-align: right;
+}
+
+.hole-row input {
+  width: 80px;
+  padding: 0.4rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
   text-align: center;
 }

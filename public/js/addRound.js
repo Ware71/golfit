@@ -1,4 +1,3 @@
-// addRound.js
 import { showOnly } from './ui.js';
 
 export function initAddPastRound(firebase) {
@@ -7,6 +6,7 @@ export function initAddPastRound(firebase) {
   const db = firebase.firestore();
   const courseSelect = document.getElementById("past-course-name");
   const teeSelect = document.getElementById("past-tee-name");
+  const roundTypeSelect = document.getElementById("round-type");
   const holeContainer = document.getElementById("hole-scores-container");
 
   courseSelect.innerHTML = `<option disabled selected>-- Select Course --</option>`;
@@ -14,6 +14,7 @@ export function initAddPastRound(firebase) {
   teeSelect.disabled = true;
 
   const courseMap = {};
+  let currentNumHoles = 18;
 
   db.collection("courses").get().then(snapshot => {
     console.log("📦 Loaded courses:", snapshot.size);
@@ -45,14 +46,24 @@ export function initAddPastRound(firebase) {
 
     teeSelect.onchange = () => {
       const selectedTee = tees.find(t => t.id === teeSelect.value);
+
+      // Set the round type based on number of holes
+      const holeCount = selectedTee.holes.length;
+      roundTypeSelect.innerHTML = `<option>${holeCount === 9 ? '9 Holes' : '18 Holes'}</option>`;
+      roundTypeSelect.disabled = true;
+
       renderHoleInputs(selectedTee.holes);
     };
   };
 
   function renderHoleInputs(holes) {
     holeContainer.innerHTML = "";
-    holes.forEach((hole, i) => {
+    currentNumHoles = holes.length;
+
+    for (let i = 0; i < currentNumHoles; i++) {
       const div = document.createElement("div");
+      div.className = "hole-row";
+      
       div.innerHTML = `
         <label>Hole ${i + 1}:</label>
         <input type="number" placeholder="Score" id="hole-score-${i}" required />
@@ -60,7 +71,7 @@ export function initAddPastRound(firebase) {
         <br/><br/>
       `;
       holeContainer.appendChild(div);
-    });
+    }
   }
 
   document.getElementById("past-round-form").addEventListener("submit", async (e) => {
@@ -71,17 +82,16 @@ export function initAddPastRound(firebase) {
     const courseName = courseSelect.value;
     const teeId = teeSelect.value;
     const dateStr = document.getElementById("round-date").value;
-    const type = document.getElementById("round-type").value;
+    const type = roundTypeSelect.value; // now set by app, not user
 
     const teeSnapshot = await db.collection("courses").doc(teeId).get();
     const teeData = teeSnapshot.data();
 
-    const holes = teeData.holes || [];
     const scores = [];
     let total = 0;
     let putts = 0;
 
-    for (let i = 0; i < holes.length; i++) {
+    for (let i = 0; i < currentNumHoles; i++) {
       const score = parseInt(document.getElementById(`hole-score-${i}`).value);
       const putt = parseInt(document.getElementById(`hole-putts-${i}`).value);
       scores.push({ hole: i + 1, score, putts: putt });
@@ -100,6 +110,6 @@ export function initAddPastRound(firebase) {
     });
 
     alert("Round saved!");
-    showOnly("home-screen");
+    showOnly("add-round-options-screen");
   });
 }
