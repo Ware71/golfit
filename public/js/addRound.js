@@ -153,12 +153,22 @@ function openScorePopup(input, par) {
 
         // After blur, lock it again and restore the original input structure
         editable.addEventListener("blur", () => {
-          const value = editable.value.trim();
-          input.value = value;
-          input.setAttribute("readonly", true);
-          editable.replaceWith(input);
-          updateTotals();
-        }, { once: true });
+        const value = editable.value.trim();
+
+        // Transfer edited value back into original input
+        input.value = value;
+
+        // Also transfer ID back to ensure totals keep working
+        input.setAttribute("id", editable.id);
+
+        // Re-enable readonly and restore input element
+        input.setAttribute("readonly", true);
+        editable.replaceWith(input);
+
+        // Trigger total update
+        updateTotals();
+      }, { once: true });
+
       };
     } else {
       const delta = score - par;
@@ -183,6 +193,7 @@ function openScorePopup(input, par) {
       btn.onclick = () => {
         input.value = score;
         popup.style.display = "none";
+        updateTotals();
       };
     }
 
@@ -231,18 +242,29 @@ function openPuttsPopup(input) {
         editable.focus();
 
         editable.addEventListener("blur", () => {
-          const value = editable.value.trim();
-          input.value = value;
-          input.setAttribute("readonly", true);
-          editable.replaceWith(input);
-          updateTotals();
-        }, { once: true });
+        const value = editable.value.trim();
+
+        // Transfer edited value back into original input
+        input.value = value;
+
+        // Also transfer ID back to ensure totals keep working
+        input.setAttribute("id", editable.id);
+
+        // Re-enable readonly and restore input element
+        input.setAttribute("readonly", true);
+        editable.replaceWith(input);
+
+        // Trigger total update
+        updateTotals();
+      }, { once: true });
+
       };
     } else {
       btn.className = "score-score par"; // Neutral style for putts
       btn.onclick = () => {
         input.value = option;
         popup.style.display = "none";
+        updateTotals();
       };
     }
 
@@ -285,13 +307,30 @@ function openPuttsPopup(input) {
     let putts = 0;
 
     for (let i = 0; i < currentNumHoles; i++) {
+      const scoreVal = document.getElementById(`hole-score-${i}`).value;
+      const puttsVal = document.getElementById(`hole-putts-${i}`).value;
+      if (scoreVal.trim() === "" || puttsVal.trim() === "") {
+        alert(`Please complete all scores and putts before submitting.`);
+        return; // stop form submission
+      }
+    }
+
+    for (let i = 0; i < currentNumHoles; i++) {
       const score = parseInt(document.getElementById(`hole-score-${i}`).value);
       const putt = parseInt(document.getElementById(`hole-putts-${i}`).value);
-      scores.push({ hole: i + 1, score, putts: putt });
+      const hole = teeData.holes[i];
+
+      scores.push({
+      hole: i + 1,
+      score,
+      putts: putt,
+      par: hole.par,
+      si: hole.si
+    });
       total += score;
       putts += putt;
     }
-
+    
     await db.collection("users").doc(uid).collection("rounds").add({
       date: new Date(dateStr),
       course: courseName,
@@ -303,6 +342,18 @@ function openPuttsPopup(input) {
     });
 
     alert("Round saved!");
+    // Reset the course and tee dropdowns
+    courseSelect.selectedIndex = 0;
+    teeSelect.selectedIndex = 0;
+    teeSelect.disabled = true;
+
+    // Clear round type and hole inputs
+    roundTypeSelect.innerHTML = `<option>--</option>`;
+    roundTypeSelect.disabled = true;
+    holeContainer.innerHTML = ""; // 🔁 clears all holes and totals
+    document.getElementById("total-score").textContent = "0";
+    document.getElementById("total-putts").textContent = "0";
+
     showOnly("add-round-options-screen");
   });
 }
