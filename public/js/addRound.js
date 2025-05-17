@@ -1,4 +1,7 @@
 import { showOnly } from './ui.js';
+import {
+  getLatestStatusAndRoundCount
+} from './handicaps.js';
 
 export function initAddPastRound(firebase) {
   showOnly("add-past-round-screen");
@@ -291,69 +294,97 @@ function openPuttsPopup(input) {
 
   document.getElementById("past-round-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const user = firebase.auth().currentUser;
-    const uid = user.uid;
 
-    const courseName = courseSelect.value;
-    const teeId = teeSelect.value;
-    const dateStr = document.getElementById("round-date").value;
-    const type = roundTypeSelect.value;
+    const submitBtn = document.getElementById("submit-round");
+    submitBtn.disabled = true;
 
-    const teeSnapshot = await db.collection("courses").doc(teeId).get();
-    const teeData = teeSnapshot.data();
+    try {
+      const user = firebase.auth().currentUser;
+      const uid = user.uid;
 
-    const scores = [];
-    let total = 0;
-    let putts = 0;
+      const courseName = courseSelect.value;
+      const teeId = teeSelect.value;
+      const dateStr = document.getElementById("round-date").value;
+      const type = roundTypeSelect.value;
 
-    for (let i = 0; i < currentNumHoles; i++) {
-      const scoreVal = document.getElementById(`hole-score-${i}`).value;
-      const puttsVal = document.getElementById(`hole-putts-${i}`).value;
-      if (scoreVal.trim() === "" || puttsVal.trim() === "") {
-        alert(`Please complete all scores and putts before submitting.`);
-        return; // stop form submission
+      const teeSnapshot = await db.collection("courses").doc(teeId).get();
+      const teeData = teeSnapshot.data();
+
+      const scores = [];
+      let total = 0;
+      let putts = 0;
+
+      for (let i = 0; i < currentNumHoles; i++) {
+        const scoreVal = document.getElementById(`hole-score-${i}`).value;
+        const puttsVal = document.getElementById(`hole-putts-${i}`).value;
+        if (scoreVal.trim() === "" || puttsVal.trim() === "") {
+          alert(`Please complete all scores and putts before submitting.`);
+          submitBtn.disabled = false;
+          return; // stop form submission
+        }
       }
-    }
 
-    for (let i = 0; i < currentNumHoles; i++) {
-      const score = parseInt(document.getElementById(`hole-score-${i}`).value);
-      const putt = parseInt(document.getElementById(`hole-putts-${i}`).value);
-      const hole = teeData.holes[i];
+      for (let i = 0; i < currentNumHoles; i++) {
+        const score = parseInt(document.getElementById(`hole-score-${i}`).value);
+        const putt = parseInt(document.getElementById(`hole-putts-${i}`).value);
+        const hole = teeData.holes[i];
 
-      scores.push({
-      hole: i + 1,
-      score,
-      putts: putt,
-      par: hole.par,
-      si: hole.si
-    });
-      total += score;
-      putts += putt;
-    }
-    
-    await db.collection("users").doc(uid).collection("rounds").add({
-      date: new Date(dateStr),
-      course: courseName,
-      tee: teeData.tee,
-      type,
-      total,
-      putts,
-      scores
-    });
+        scores.push({
+        hole: i + 1,
+        score,
+        putts: putt,
+        par: hole.par,
+        si: hole.si
+      });
+        total += score;
+        putts += putt;
+      }
+      
+      await db.collection("users").doc(uid).collection("rounds").add({
+        date: new Date(dateStr),
+        course: courseName,
+        tee: teeData.tee,
+        type,
+        total,
+        putts,
+        scores
+      });
 
-    alert("Round saved!");
-    // Reset the course and tee dropdowns
-    courseSelect.selectedIndex = 0;
-    teeSelect.selectedIndex = 0;
-    teeSelect.disabled = true;
+      // ✅ Fetch all past rounds
+      const roundsSnapshot = await db.collection("users").doc(uid).collection("rounds").get();
+      const roundHistory = [];
 
-    // Clear round type and hole inputs
-    roundTypeSelect.innerHTML = `<option>--</option>`;
-    roundTypeSelect.disabled = true;
-    holeContainer.innerHTML = ""; // 🔁 clears all holes and totals
-    document.getElementById("total-score").textContent = "0";
-    document.getElementById("total-putts").textContent = "0";
+      roundsSnapshot.forEach(doc => {
+        roundHistory.push(doc.data());
+      });
 
-    showOnly("add-round-options-screen");
+      // ✅ Use your helper function
+      const newDate = new Date(dateStr);
+      const { isLatest, validRoundCount } = getLatestStatusAndRoundCount(newDate, roundHistory);
+
+      // ✅ Show feedback
+      if (isLatest) {
+        alert(`✅ Round saved! This is your latest round. You now have ${validRoundCount} valid rounds.`);
+      } else {
+        alert(`✅ Round saved! ⚠️ This is not your latest round. You have ${validRoundCount} valid rounds.`);
+      }
+      // Reset the course and tee dropdowns
+      courseSelect.selectedIndex = 0;
+      teeSelect.selectedIndex = 0;
+      teeSelect.disabled = true;
+
+      // Clear round type and hole inputs
+      roundTypeSelect.innerHTML = `<option>--</option>`;
+      roundTypeSelect.disabled = true;
+      holeContainer.innerHTML = ""; // 🔁 clears all holes and totals
+      document.getElementById("total-score").textContent = "0";
+      document.getElementById("total-putts").textContent = "0";
+
+      showOnly("add-round-options-screen");
+    } catch (error) {
+    alert("Error saving round: " + error.message);
+  } finally {
+    submitBtn.disabled = false;
+  }
   });
 }
