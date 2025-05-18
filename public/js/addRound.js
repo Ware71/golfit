@@ -288,9 +288,15 @@ function openPuttsPopup(input) {
       puttsPopup.style.display = "none";
 }
   });
+  
+  let isSubmitting = false;
 
   document.getElementById("past-round-form").addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    if (isSubmitting) return; // Prevent double submission
+    isSubmitting = true;
+    
     const submitBtn = document.getElementById("submit-round");
     submitBtn.disabled = true;
 
@@ -336,7 +342,10 @@ function openPuttsPopup(input) {
           score,
           putts: putt,
           par: hole.par,
-          si: hole.si
+          si: hole.si,
+          esc: null,
+          max: null,
+          ags: null
         });
 
         total += score;
@@ -351,6 +360,17 @@ function openPuttsPopup(input) {
         type,
         total,
         putts,
+        AdjustedGrossScore: null,
+        CurrentHandicap: null,
+        AfterRoundHandicap: null,
+        HandicapAllowance: 1,
+        CourseHandicap: null,
+        PlayingHandicap: null,
+        RawScoreDifferential: null,
+        AdjustedScoreDifferential: null,
+        HandicapScoreDifferential: null,
+        NineHolepaired: null,
+        ExceptionalAdjustment: null,
         scores
       });
 
@@ -375,6 +395,7 @@ function openPuttsPopup(input) {
     } catch (error) {
       alert("Error saving round: " + error.message);
     } finally {
+      isSubmitting = false;
       submitBtn.disabled = false;
     }
   });
